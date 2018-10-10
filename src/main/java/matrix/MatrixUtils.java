@@ -2,6 +2,11 @@ package matrix;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class MatrixUtils {
@@ -117,7 +122,7 @@ public class MatrixUtils {
         return tfidfMatrix;
     }
 
-    public static void generateTopicsPerFolder(Double[][] tfidf) {
+    public static void generateTopicsPerFolder(Double[][] tfidf) throws IOException {
 
         for (Map.Entry<String, List<Integer>> folder : folderToListOfIs.entrySet()) {
             Double[][] folderTfIdfMatrix = new Double[folder.getValue().size()][tfidf[0].length];
@@ -154,6 +159,8 @@ public class MatrixUtils {
             }
 
             //write the keywords to a file
+            Path file = Paths.get(folder.getKey() + ".txt");
+            Files.write(file, keywords, Charset.forName("UTF-8"));
         }
 
     }
