@@ -38,7 +38,6 @@ public class KMeans {
         double[][] iterCentroids = centroids;
 
         do {
-            System.out.println("round is " + iteration);
 
             // set centroids to previous results
             centroids = iterCentroids;
@@ -83,7 +82,6 @@ public class KMeans {
         double max = 0;
         for (int i = 0; i < k; i++) {
             double tempDistance = distance(centroids[i], roundCentroids[i]);
-            System.out.println("Temp distance is: " + tempDistance);
             if (tempDistance > max) {
                 max = tempDistance;
             }

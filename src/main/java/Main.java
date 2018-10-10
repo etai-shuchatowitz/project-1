@@ -1,17 +1,15 @@
 import cluster.KMeans;
 import matrix.MatrixUtils;
 import model.StatData;
-import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 import preprocess.PreProcess;
+import visual.Visualize;
 
-import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         String extension = "txt";
         String pathName = "src/main/resources/dataset_3/data";
         PreProcess preProcess = new PreProcess();
@@ -30,6 +28,9 @@ public class Main {
         kMeans.kmeans();
 
         double[][] clusters = kMeans.getCentroids();
+
+        // Visualize.visualize(tfidf);
+
         int[] labels = kMeans.getLabel();
 
         int[][] confusionMatrix = MatrixUtils.generateConfusionMatrix(labels);
