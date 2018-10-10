@@ -3,11 +3,13 @@ package preprocess.utils;
 import edu.stanford.nlp.pipeline.CoreDocument;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 public class StanfordNLPClient {
 
-    public static void annotateDocument(String text)  {
+    public static String annotateDocument(String text)  {
 
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize,ssplit,pos,lemma");
@@ -18,7 +20,17 @@ public class StanfordNLPClient {
         CoreDocument doc = new CoreDocument(text);
         pipeline.annotate(doc);
 
-        // System.out.println(tokensAndNERTags);
+        StringBuffer stringBuffer = new StringBuffer();
+
+        doc.tokens().forEach(token -> {
+           stringBuffer.append(token.lemma() + " ");
+        });
+
+        return stringBuffer.toString().trim();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(annotateDocument("i will have so much fun today"));
     }
 
 
