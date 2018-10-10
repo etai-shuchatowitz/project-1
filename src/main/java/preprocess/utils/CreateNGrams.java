@@ -1,4 +1,4 @@
-package preprocess;
+package preprocess.utils;
 
 import java.io.IOException;
 import java.util.*;
@@ -6,6 +6,7 @@ import java.util.*;
 public class CreateNGrams {
 
     public static Map<String, Integer> createNGrams(Map<String, Integer> nGramFrequency, String string) throws IOException {
+
         String[] words = string.split(" ");
         int maxRange = 3;
         for (int i = 0; i < words.length-maxRange+1; i++) {
