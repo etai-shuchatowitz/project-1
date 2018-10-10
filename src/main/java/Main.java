@@ -1,3 +1,4 @@
+import cluster.KMeans;
 import matrix.MatrixUtils;
 import preprocess.PreProcess;
 
@@ -15,9 +16,17 @@ public class Main {
         Map<String, String> documents = preProcess.preprocessDocument(extension, pathName);
         Set<String> phrases = preProcess.getAllPhrasesInDocuments(documents);
 
-        Integer[][] documentMatrix = MatrixUtils.calculateDocumentMatrix(documents, phrases);
-        Double[][] tfidf = MatrixUtils.convertToTfIdf(documentMatrix, documentMatrix.length, documentMatrix[0].length);
+        int[][] documentMatrix = MatrixUtils.calculateDocumentMatrix(documents, phrases);
+        double[][] tfidf = MatrixUtils.convertToTfIdf(documentMatrix, documentMatrix.length, documentMatrix[0].length);
 
         MatrixUtils.generateTopicsPerFolder(tfidf);
+
+        int k = 3;
+
+        KMeans kMeans = new KMeans(tfidf, k, 1000, "cosin");
+        kMeans.kmeans();
+
+        double[][] clusters = kMeans.getCentroids();
+        int[] labels = kMeans.getLabel();
     }
 }

@@ -18,11 +18,11 @@ public class MatrixUtils {
 
     private static Map<String, List<Integer>> folderToListOfIs = new HashMap<>();
 
-    public static Integer[][] calculateDocumentMatrix(Map<String, String> textPerDoc, Set<String> allPhrases) {
+    public static int[][] calculateDocumentMatrix(Map<String, String> textPerDoc, Set<String> allPhrases) {
 
         List<String> phraseList = new ArrayList<>(allPhrases); // need to convert to list to preserve order
 
-        Integer[][] documentMatrix = new Integer[textPerDoc.size()][allPhrases.size()]; // initialize matrix of docs by phrases
+        int[][] documentMatrix = new int[textPerDoc.size()][allPhrases.size()]; // initialize matrix of docs by phrases
 
         int i = 0;
 
@@ -94,8 +94,8 @@ public class MatrixUtils {
         }
     }
 
-    public static Double[][] convertToTfIdf(Integer[][] matrix, int x, int y) {
-        Double[][] tfidfMatrix = new Double[x][y];
+    public static double[][] convertToTfIdf(int[][] matrix, int x, int y) {
+        double[][] tfidfMatrix = new double[x][y];
 
         for (Map.Entry<String, List<Integer>> folder : folderToListOfIs.entrySet()) {
             System.out.println(folder);
@@ -122,10 +122,10 @@ public class MatrixUtils {
         return tfidfMatrix;
     }
 
-    public static void generateTopicsPerFolder(Double[][] tfidf) throws IOException {
+    public static void generateTopicsPerFolder(double[][] tfidf) throws IOException {
 
         for (Map.Entry<String, List<Integer>> folder : folderToListOfIs.entrySet()) {
-            Double[][] folderTfIdfMatrix = new Double[folder.getValue().size()][tfidf[0].length];
+            double[][] folderTfIdfMatrix = new double[folder.getValue().size()][tfidf[0].length];
 
             // Create document matrix
             for(int i = 0; i < folder.getValue().size(); i++) {
@@ -144,13 +144,12 @@ public class MatrixUtils {
                 sumToPhrase.put(sumPerColumn, jToPhrase.get(j));
             }
 
-
             //sort the collection in reverse order
             sums.sort(Collections.reverseOrder());
 
             // make a list of keywords
             Set<String> keywords = new HashSet<>();
-            for (Double sum : sums) {
+            for (double sum : sums) {
                 if(sum > 0.1) {
                    keywords.add(sumToPhrase.get(sum));
                 } else {
