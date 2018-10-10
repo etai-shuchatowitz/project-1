@@ -1,5 +1,6 @@
 package matrix;
 
+import model.StatData;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class MatrixUtils {
     private static Map<Integer, String> iToDocumentName = new HashMap<>();
     private static Map<Integer, String> jToPhrase = new HashMap<>();
 
-    private static Map<String, List<Integer>> folderToListOfIs = new HashMap<>();
+    private static Map<Integer, List<Integer>> folderToListOfIs = new HashMap<>();
 
     public static int[][] calculateDocumentMatrix(Map<String, String> textPerDoc, Set<String> allPhrases) {
 
@@ -80,24 +81,24 @@ public class MatrixUtils {
     private static void fillFolderToListOfIs(String documentName, int i) {
         List<Integer> integers;
         if(documentName.contains("C1")) {
-            integers = folderToListOfIs.getOrDefault("C1", new ArrayList<>());
+            integers = folderToListOfIs.getOrDefault(0, new ArrayList<>());
             integers.add(i);
-            folderToListOfIs.put("C1", integers);
+            folderToListOfIs.put(0, integers);
         } else if (documentName.contains("C4")) {
-            integers = folderToListOfIs.getOrDefault("C4", new ArrayList<>());
+            integers = folderToListOfIs.getOrDefault(1, new ArrayList<>());
             integers.add(i);
-            folderToListOfIs.put("C4", integers);
+            folderToListOfIs.put(1, integers);
         } else {
-            integers = folderToListOfIs.getOrDefault("C7", new ArrayList<>());
+            integers = folderToListOfIs.getOrDefault(2, new ArrayList<>());
             integers.add(i);
-            folderToListOfIs.put("C7", integers);
+            folderToListOfIs.put(2, integers);
         }
     }
 
     public static double[][] convertToTfIdf(int[][] matrix, int x, int y) {
         double[][] tfidfMatrix = new double[x][y];
 
-        for (Map.Entry<String, List<Integer>> folder : folderToListOfIs.entrySet()) {
+        for (Map.Entry<Integer, List<Integer>> folder : folderToListOfIs.entrySet()) {
             System.out.println(folder);
         }
 
@@ -124,7 +125,7 @@ public class MatrixUtils {
 
     public static void generateTopicsPerFolder(double[][] tfidf) throws IOException {
 
-        for (Map.Entry<String, List<Integer>> folder : folderToListOfIs.entrySet()) {
+        for (Map.Entry<Integer, List<Integer>> folder : folderToListOfIs.entrySet()) {
             double[][] folderTfIdfMatrix = new double[folder.getValue().size()][tfidf[0].length];
 
             // Create document matrix
@@ -162,5 +163,59 @@ public class MatrixUtils {
             Files.write(file, keywords, Charset.forName("UTF-8"));
         }
 
+    }
+
+    public static int[][] generateConfusionMatrix(int[] labels) {
+        int[][] confusionMatrix = new int[folderToListOfIs.keySet().size()][folderToListOfIs.keySet().size()];
+        for (Map.Entry<Integer, List<Integer>> folder : folderToListOfIs.entrySet()) {
+            int actualLabel = folder.getKey();
+            for(int i = 0; i < folder.getValue().size(); i++) {
+                int predictedLabel = labels[i];
+                confusionMatrix[predictedLabel][actualLabel]++;
+            }
+        }
+        return confusionMatrix;
+    }
+
+    public static StatData[] getPrecisionAndRecall(int[][] confusionMatrix) {
+
+        StatData[] statDatas = new StatData[confusionMatrix.length];
+
+        // get precision
+        for (int i = 0; i < confusionMatrix.length; i++) {
+
+            int num = 0;
+            int pdenom = 0;
+            int rdenom = 0;
+            double recall = 0;
+            double precision = 0;
+            double fMeasure = 0;
+            StatData s;
+
+            for (int j = 0; j < confusionMatrix[0].length; j++) {
+                if (i == j) {
+                    num = confusionMatrix[i][j];
+                }
+                pdenom += confusionMatrix[i][j];
+                rdenom += confusionMatrix[j][i];
+            }
+
+            if (rdenom != 0) {
+                recall = (double) num / (double) rdenom;
+            }
+
+            if (pdenom != 0) {
+                precision = (double) num / (double) pdenom;
+            }
+
+            if (recall != 0 || precision != 0) {
+                fMeasure = 2 * ( (recall * precision) / (recall + precision) );
+            }
+
+            StatData val = new StatData(precision, recall, fMeasure);
+
+            statDatas[i] = val;
+        }
+        return statDatas;
     }
 }

@@ -53,26 +53,27 @@ public class KMeans {
 
         } while (!stopCondition(iteration, threshhold, iterCentroids));
 
-        int tally0 = 0;
-        int tally1 = 0;
-        int tally2 = 0;
-        for (int i = 0; i < m; i++) {
-            switch (label[i]) {
-                case(0):
-                    tally0++;
-                    break;
-                case(1):
-                    tally1++;
-                    break;
-                case(2):
-                    tally2++;
-                    break;
-            }
 
-            System.out.println(label[i]);
-        }
-
-        System.out.println("there are " + tally0 + " 0s, " +tally1 + " 1s  and " + tally2 + " 2s");
+//        int tally0 = 0;
+//        int tally1 = 0;
+//        int tally2 = 0;
+//        for (int i = 0; i < m; i++) {
+//            switch (label[i]) {
+//                case(0):
+//                    tally0++;
+//                    break;
+//                case(1):
+//                    tally1++;
+//                    break;
+//                case(2):
+//                    tally2++;
+//                    break;
+//            }
+//
+//            System.out.println(label[i]);
+//        }
+//
+//        System.out.println("there are " + tally0 + " 0s, " +tally1 + " 1s  and " + tally2 + " 2s");
     }
 
     private boolean stopCondition(int iteration, double threshhold, double[][] roundCentroids) {
