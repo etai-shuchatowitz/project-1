@@ -3,7 +3,7 @@
 To Run:
 
 ```bash
-git clone https://github.com/etai-shuchatowitz/project-1 # --recursive flag is necessary for dependencies
+git clone https://github.com/etai-shuchatowitz/project-1 
 mvn clean package
 mvn exec:java -Dexec.mainClass="Main"
 ```
