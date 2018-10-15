@@ -1,7 +1,9 @@
 package preprocess.utils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CreateNGrams {
 
@@ -9,19 +11,17 @@ public class CreateNGrams {
 
         String[] words = string.split(" ");
         int maxRange = 3;
-        for (int i = 0; i < words.length-maxRange+1; i++) {
+        for (int i = 0; i < words.length - maxRange + 1; i++) {
             List<String> buildPhrase = new ArrayList<>();
-            for(int j = i; j < i+maxRange; j++) {
+            for (int j = i; j < i + maxRange; j++) {
                 buildPhrase.add(words[j]);
-                if (buildPhrase.size() > 1) {
-                    String phrase = String.join(" ", buildPhrase);
-                    if (nGramFrequency.get(phrase) == null) {
-                        nGramFrequency.put(phrase, 1);
-                    } else {
-                        int tempInt = nGramFrequency.get(phrase);
-                        tempInt++;
-                        nGramFrequency.put(phrase, tempInt);
-                    }
+                String phrase = String.join(" ", buildPhrase);
+                if (nGramFrequency.get(phrase) == null) {
+                    nGramFrequency.put(phrase, 1);
+                } else {
+                    int tempInt = nGramFrequency.get(phrase);
+                    tempInt++;
+                    nGramFrequency.put(phrase, tempInt);
                 }
             }
         }

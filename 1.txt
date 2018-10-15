@@ -1,12 +1,6 @@
 agriculture
-likely
-vaccine
 disease
 mouth
 mouth disease
-meat
-campaign
-veterinary
 hoof mouth
 hoof mouth disease
-drug

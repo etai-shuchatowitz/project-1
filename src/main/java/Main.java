@@ -2,7 +2,6 @@ import cluster.KMeans;
 import matrix.MatrixUtils;
 import model.StatData;
 import preprocess.PreProcess;
-import visual.Visualize;
 
 import java.util.Map;
 import java.util.Set;
@@ -29,9 +28,17 @@ public class Main {
 
         double[][] clusters = kMeans.getCentroids();
 
-        // Visualize.visualize(tfidf);
-
         int[] labels = kMeans.getLabel();
+
+        System.out.println("Labels are: ");
+
+        for (int i = 0; i < labels.length; i++) {
+            System.out.print(labels[i] + " ");
+        }
+
+        System.out.println();
+
+        // Visualize.visualize(tfidf);
 
         int[][] confusionMatrix = MatrixUtils.generateConfusionMatrix(labels);
 
