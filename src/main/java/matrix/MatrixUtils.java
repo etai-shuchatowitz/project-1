@@ -3,6 +3,8 @@ package matrix;
 import model.StatData;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -14,33 +16,31 @@ public class MatrixUtils {
 
     private static Map<String, Integer> wordsPerDoc = new HashMap<>();
     private static Map<String, Integer> numberOfDocsContainingWord = new HashMap<>();
-    private static Map<Integer, String> iToDocumentName = new HashMap<>();
-    private static Map<Integer, String> jToPhrase = new HashMap<>();
+    private static Map<Integer, String> documentNumberToDocumentName = new HashMap<>();
+    private static Map<Integer, String> wordNumberToPhrase = new HashMap<>();
 
     private static Map<Integer, List<Integer>> folderToListOfIs = new HashMap<>();
 
-    public static int[][] calculateDocumentMatrix(Map<String, String> textPerDoc, Set<String> allPhrases) {
+    public static double[][] calculateDocumentMatrix(Map<String, String> textPerDoc, List<String> allPhrases) {
 
-        List<String> phraseList = new ArrayList<>(allPhrases); // need to convert to list to preserve order
+        double[][] documentMatrix = new double[textPerDoc.size()][allPhrases.size()]; // initialize matrix of docs by phrases
 
-        int[][] documentMatrix = new int[textPerDoc.size()][allPhrases.size()]; // initialize matrix of docs by phrases
-
-        int i = 0;
+        int documentNumber = 0;
 
         for (Map.Entry<String, String> document : textPerDoc.entrySet()) {
+            String text = document.getValue();
 
             String documentName = document.getKey();
 
-            iToDocumentName.put(i, documentName);
+            documentNumberToDocumentName.put(documentNumber, documentName);
 
-            fillFolderToListOfIs(documentName, i);
-            int j = 0;
+            fillFolderToListOfIs(documentName, documentNumber);
 
-            for (String phrase : phraseList) {
+            int wordNumber = 0;
 
-                jToPhrase.put(j, phrase);
+            for (String phrase : allPhrases) {
 
-                String text = document.getValue();
+                wordNumberToPhrase.put(wordNumber, phrase);
                 String wordWithSpaces;
 
                 // Complicated edge case handling
@@ -52,27 +52,20 @@ public class MatrixUtils {
                    wordWithSpaces = " " + phrase + " "; // need to surround with spaces to account for substrings
                 }
 
-                int count = StringUtils.countMatches(text, wordWithSpaces);
+                double count = StringUtils.countMatches(text, wordWithSpaces);
 
                 if(count > 0) {
-                    int documentTally;
-                    if (numberOfDocsContainingWord.get(phrase) != null) {
-                        documentTally = numberOfDocsContainingWord.get(phrase);
-                        documentTally++;
-                    } else {
-                        documentTally = 1;
-                    }
-                    numberOfDocsContainingWord.put(phrase, documentTally);
+                    numberOfDocsContainingWord.merge(phrase, 1, Integer::sum);
                 }
 
                 int numWords = text.split(" ").length;
                 wordsPerDoc.put(document.getKey(), numWords);
 
-                documentMatrix[i][j] = count;
-                j++;
+                documentMatrix[documentNumber][wordNumber] = count;
+                wordNumber++;
             }
 
-            i++;
+            documentNumber++;
         }
 
         return documentMatrix;
@@ -95,28 +88,30 @@ public class MatrixUtils {
         }
     }
 
-    public static double[][] convertToTfIdf(int[][] matrix, int x, int y) {
+    public static double[][] convertToTfIdf(double[][] documentMatrix, int x, int y) {
         double[][] tfidfMatrix = new double[x][y];
 
         for (Map.Entry<Integer, List<Integer>> folder : folderToListOfIs.entrySet()) {
             System.out.println(folder);
         }
 
-        for(int i = 0; i < x; i++) {
+        for(int document = 0; document < x; document++) {
 
-            for (int j = 0; j < y; j++) {
+            for (int word = 0; word < y; word++) {
 
-                int value = matrix[i][j];
+                double numberOfAppearences = documentMatrix[document][word];
 
-                String docName = iToDocumentName.get(i);
+                String docName = documentNumberToDocumentName.get(document);
                 int numWordsInDoc = wordsPerDoc.get(docName);
-                double tf = (double) value / (double) numWordsInDoc;
+                double tf = numberOfAppearences / (double) numWordsInDoc;
 
-                String phrase = jToPhrase.get(j);
+                String phrase = wordNumberToPhrase.get(word);
 
                 double idf = Math.log( (double) x / (double) numberOfDocsContainingWord.get(phrase));
                 double tfidf = tf * idf;
-                tfidfMatrix[i][j] = tfidf;
+                if(numberOfDocsContainingWord.get(phrase) <= 8) {
+                    tfidfMatrix[document][word] = tfidf;
+                }
             }
         }
 
@@ -142,7 +137,7 @@ public class MatrixUtils {
                     sumPerColumn += folderTfIdfMatrix[i][j];
                 }
                 sums.add(sumPerColumn);
-                sumToPhrase.put(sumPerColumn, jToPhrase.get(j));
+                sumToPhrase.put(sumPerColumn, wordNumberToPhrase.get(j));
             }
 
             //sort the collection in reverse order
@@ -217,5 +212,26 @@ public class MatrixUtils {
             statDatas[i] = val;
         }
         return statDatas;
+    }
+
+    public static void write2DMatrixToCSV(double[][] matrix, String fileName) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < matrix.length; i++)//for each row
+        {
+            for(int j = 0; j < matrix[0].length; j++)//for each column
+            {
+                builder.append(matrix[i][j]+"");//append to the output string
+                if(j < matrix[0].length - 1)//if this is not the last row element
+                    builder.append(",");//then add comma (if you don't like commas you can use spaces)
+            }
+            builder.append("\n");//append new line at the end of the row
+        }
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName + ".csv"));
+        writer.write(builder.toString());//save the string representation of the board
+        writer.close();
+    }
+
+    public static Map<Integer, List<Integer>> getFolderToListOfIs() {
+        return folderToListOfIs;
     }
 }

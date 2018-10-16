@@ -1,6 +1,4 @@
 pilot
-safety
 civil
 aviation
-air
 airline

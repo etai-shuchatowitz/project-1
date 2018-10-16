@@ -2,10 +2,8 @@ bank
 loan
 mortgage
 rate
-mr
 per cent
 mortgage rate
 mr takenaka
-per
 percent
 takenaka

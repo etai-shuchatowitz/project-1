@@ -26,7 +26,7 @@ public class Visualize {
                 x[j] = pcaMatrix[i][j];
                 y[j] = pcaMatrix[i][j];
 
-                System.out.println(x[j] + " " + y[j]);
+                //System.out.println(x[j] + " " + y[j]);
             }
         }
 

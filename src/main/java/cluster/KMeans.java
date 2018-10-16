@@ -1,8 +1,6 @@
 package cluster;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class KMeans {
 
@@ -11,31 +9,42 @@ public class KMeans {
 
     private int iterations;
 
-    private int m;
-    private int n;
+    private int numDocuments;
+    private int numWords;
 
     private double[][] centroids;
     private int[] label;
 
     private String similarity;
 
-    public KMeans(double[][] data, int k, int iterations, String similarity) {
+    private double maxDistance;
+
+    private Map<Integer, List<Integer>> folderNumberToDocInts;
+
+    public KMeans(double[][] data, int k, int iterations, String similarity, Map<Integer, List<Integer>> folderNumberToDocInts) {
         this.data = data;
         this.k = k;
         this.iterations = iterations;
-        this.m = data.length;
-        this.n = data[0].length;
+        this.numDocuments = data.length; // rows
+        this.numWords = data[0].length; // columns
+        this.label = new int[numDocuments];
         this.similarity = similarity;
+        this.maxDistance = Double.POSITIVE_INFINITY;
+        this.folderNumberToDocInts = folderNumberToDocInts;
     }
 
     public void kmeans() {
 
+        System.out.println("documents: " + numDocuments);
+        System.out.println("words: " + numWords);
+
         // randomly fill centroids
         randomlyFillCentroids();
         double threshhold = 0.001;
-        int iteration = 0;
 
         double[][] iterCentroids = centroids;
+
+        int iteration = 0;
 
         do {
 
@@ -50,33 +59,11 @@ public class KMeans {
 
             iteration++;
 
-        } while (!stopCondition(iteration, threshhold, iterCentroids));
-
-
-//        int tally0 = 0;
-//        int tally1 = 0;
-//        int tally2 = 0;
-//        for (int i = 0; i < m; i++) {
-//            switch (label[i]) {
-//                case(0):
-//                    tally0++;
-//                    break;
-//                case(1):
-//                    tally1++;
-//                    break;
-//                case(2):
-//                    tally2++;
-//                    break;
-//            }
-//
-//            System.out.println(label[i]);
-//        }
-//
-//        System.out.println("there are " + tally0 + " 0s, " +tally1 + " 1s  and " + tally2 + " 2s");
+        } while (!stopCondition(threshhold, iterCentroids, iteration));
     }
 
-    private boolean stopCondition(int iteration, double threshhold, double[][] roundCentroids) {
-        if (iteration >= iterations) {
+    private boolean stopCondition(double threshhold, double[][] roundCentroids, int iteration) {
+        if(iteration >= iterations) {
             return true;
         }
         double max = 0;
@@ -86,44 +73,55 @@ public class KMeans {
                 max = tempDistance;
             }
         }
-        return max < threshhold;
+
+        if (Math.abs(max - maxDistance) < threshhold) {
+            return true;
+        } else {
+            maxDistance = max;
+            return false;
+        }
+
 
     }
 
     private double[][] updateCentroids() {
 
-        double[][] tempCentroids = new double[k][n];
+        double[][] tempCentroids = new double[k][numWords]; // 3 x 64
         int[] tally = new int[k];
 
         // initialize to zero
         for (int i = 0; i < k; i++) {
             tally[i] = 0;
-            for (int j = 0; j < n; j++) {
+            for (int j = 0; j < numWords; j++) {
                 tempCentroids[i][j] = 0.0;
             }
         }
 
         // do the sums
-        for (int i = 0; i < m; i++) {
-            int value = label[i];
-            for (int j = 0; j < n; j++) {
+        for (int i = 0; i < numDocuments; i++) {
+
+            int value = label[i]; // get the document's label (0, 1, 2)
+
+            for (int j = 0; j < numWords; j++) {
                 tempCentroids[value][j] += data[i][j];
             }
+
             tally[value]++;
         }
 
         // get the average
         for (int i = 0; i < k; i++) {
-            for (int j = 0; j < n; j++) {
-                tempCentroids[i][j] /= tally[i];
+            for (int j = 0; j < numWords; j++) {
+                tempCentroids[i][j] /= (double) tally[i];
             }
         }
+
 
         return tempCentroids;
     }
 
     private void randomlyFillCentroids() {
-        centroids = new double[k][n];
+        centroids = new double[k][numWords];
 
         Set<Integer> randomIntegers = new HashSet<>();
 
@@ -131,58 +129,71 @@ public class KMeans {
 
             int random;
             do {
-                random = new Random().nextInt(m);
+                random = new Random().nextInt(numDocuments);
             } while (randomIntegers.contains(random));
 
             randomIntegers.add(random);
+            
 
-            for (int j = 0; j < n; j++) {
+            for (int j = 0; j < numWords; j++) {
                 centroids[i][j] = data[random][j];
             }
         }
     }
 
     private void assignLabels() {
-        label = new int[m];
 
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < numDocuments; i++) {
 
             double minDistance = Double.POSITIVE_INFINITY;
-            int minJ = 0;
+            int minIndex = 0;
 
             for (int j = 0; j < k; j++) {
+
                 double distance = distance(data[i], centroids[j]);
+
                 if (distance < minDistance) {
                     minDistance = distance;
-                    minJ = j;
+                    minIndex = j;
                 }
             }
-            label[i] = minJ;
+            label[i] = minIndex;
         }
+//
+//        System.out.print("labels are: ");
+//        for (int i = 0; i < label.length; i++) {
+//            System.out.print(label[i] + " ");
+//        }
+//        System.out.println();
 
     }
 
     private double distance(double[] x, double[] y) {
         if (similarity.equalsIgnoreCase("euclidean")) {
             return euclideanDistance(x, y);
-        }
-        else {
+        } else {
             return cosinDistance(x, y);
         }
     }
 
     private double cosinDistance(double[] x, double[] y) {
+
         double dot = 0;
         double magA = 0;
         double magB = 0;
 
-        for (int i=0; i < x.length; i++) {
+        for (int i = 0; i < x.length; i++) {
             dot += x[i] * y[i];
             magA += x[i] * x[i];
             magB += y[i] * y[i];
         }
 
-        return dot / (Math.sqrt(magA) * Math.sqrt(magB));
+        magA = Math.sqrt(magA);
+        magB = Math.sqrt(magB);
+
+        double cosin_similarity = dot / (magA * magB);
+
+        return cosin_similarity;
     }
 
     private double euclideanDistance(double[] x, double[] y) {
