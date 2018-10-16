@@ -11,8 +11,8 @@ public class KMeans {
 
     private int iterations;
 
-    private int m;
-    private int n;
+    private int rows; // 24
+    private int columns; // 2376
 
     private double[][] centroids;
     private int[] label;
@@ -23,8 +23,8 @@ public class KMeans {
         this.data = data;
         this.k = k;
         this.iterations = iterations;
-        this.m = data.length;
-        this.n = data[0].length;
+        this.rows = data.length;
+        this.columns = data[0].length;
         this.similarity = similarity;
     }
 
@@ -51,28 +51,6 @@ public class KMeans {
             iteration++;
 
         } while (!stopCondition(iteration, threshhold, iterCentroids));
-
-
-//        int tally0 = 0;
-//        int tally1 = 0;
-//        int tally2 = 0;
-//        for (int i = 0; i < m; i++) {
-//            switch (label[i]) {
-//                case(0):
-//                    tally0++;
-//                    break;
-//                case(1):
-//                    tally1++;
-//                    break;
-//                case(2):
-//                    tally2++;
-//                    break;
-//            }
-//
-//            System.out.println(label[i]);
-//        }
-//
-//        System.out.println("there are " + tally0 + " 0s, " +tally1 + " 1s  and " + tally2 + " 2s");
     }
 
     private boolean stopCondition(int iteration, double threshhold, double[][] roundCentroids) {
@@ -90,62 +68,10 @@ public class KMeans {
 
     }
 
-    private double[][] updateCentroids() {
-
-        double[][] tempCentroids = new double[k][n];
-        int[] tally = new int[k];
-
-        // initialize to zero
-        for (int i = 0; i < k; i++) {
-            tally[i] = 0;
-            for (int j = 0; j < n; j++) {
-                tempCentroids[i][j] = 0.0;
-            }
-        }
-
-        // do the sums
-        for (int i = 0; i < m; i++) {
-            int value = label[i];
-            for (int j = 0; j < n; j++) {
-                tempCentroids[value][j] += data[i][j];
-            }
-            tally[value]++;
-        }
-
-        // get the average
-        for (int i = 0; i < k; i++) {
-            for (int j = 0; j < n; j++) {
-                tempCentroids[i][j] /= tally[i];
-            }
-        }
-
-        return tempCentroids;
-    }
-
-    private void randomlyFillCentroids() {
-        centroids = new double[k][n];
-
-        Set<Integer> randomIntegers = new HashSet<>();
-
-        for (int i = 0; i < k; i++) {
-
-            int random;
-            do {
-                random = new Random().nextInt(m);
-            } while (randomIntegers.contains(random));
-
-            randomIntegers.add(random);
-
-            for (int j = 0; j < n; j++) {
-                centroids[i][j] = data[random][j];
-            }
-        }
-    }
-
     private void assignLabels() {
-        label = new int[m];
+        label = new int[rows];
 
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < rows; i++) {
 
             double minDistance = Double.POSITIVE_INFINITY;
             int minJ = 0;
@@ -161,6 +87,59 @@ public class KMeans {
         }
 
     }
+
+    private double[][] updateCentroids() {
+
+        double[][] tempCentroids = new double[k][columns];
+        int[] tally = new int[k];
+
+        // initialize to zero
+        for (int i = 0; i < k; i++) {
+            tally[i] = 0;
+            for (int j = 0; j < columns; j++) {
+                tempCentroids[i][j] = 0.0;
+            }
+        }
+
+        // do the sums
+        for (int i = 0; i < rows; i++) {
+            int value = label[i];
+            for (int j = 0; j < columns; j++) {
+                tempCentroids[value][j] += data[i][j];
+            }
+            tally[value]++;
+        }
+
+        // get the average
+        for (int i = 0; i < k; i++) {
+            for (int j = 0; j < columns; j++) {
+                tempCentroids[i][j] /= tally[i];
+            }
+        }
+
+        return tempCentroids;
+    }
+
+    private void randomlyFillCentroids() {
+        centroids = new double[k][columns];
+
+        Set<Integer> randomIntegers = new HashSet<>();
+
+        for (int i = 0; i < k; i++) {
+
+            int random;
+            do {
+                random = new Random().nextInt(rows);
+            } while (randomIntegers.contains(random));
+
+            randomIntegers.add(random);
+
+            for (int j = 0; j < columns; j++) {
+                centroids[i][j] = data[random][j];
+            }
+        }
+    }
+
 
     private double distance(double[] x, double[] y) {
         if (similarity.equalsIgnoreCase("euclidean")) {

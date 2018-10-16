@@ -4,6 +4,9 @@ import model.StatData;
 import preprocess.PreProcess;
 import visual.Visualize;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,11 +17,13 @@ public class Main {
         String pathName = "src/main/resources/dataset_3/data";
         PreProcess preProcess = new PreProcess();
 
-        Map<String, String> documents = preProcess.preprocessDocument(extension, pathName);
+        LinkedHashMap<String, String> documents = preProcess.preprocessDocument(extension, pathName);
         Set<String> phrases = preProcess.getAllPhrasesInDocuments(documents);
 
-        int[][] documentMatrix = MatrixUtils.calculateDocumentMatrix(documents, phrases);
+        double[][] documentMatrix = MatrixUtils.calculateDocumentMatrix(documents, phrases);
         double[][] tfidf = MatrixUtils.convertToTfIdf(documentMatrix, documentMatrix.length, documentMatrix[0].length);
+
+        MatrixUtils.write2DMatrixToCSV(tfidf, "tfidf");
 
         MatrixUtils.generateTopicsPerFolder(tfidf);
 
@@ -32,6 +37,10 @@ public class Main {
         // Visualize.visualize(tfidf);
 
         int[] labels = kMeans.getLabel();
+        System.out.println("Labels are: ");
+        for (int i = 0; i < labels.length; i++) {
+            System.out.print(labels[i] + " ");
+        }
 
         int[][] confusionMatrix = MatrixUtils.generateConfusionMatrix(labels);
 

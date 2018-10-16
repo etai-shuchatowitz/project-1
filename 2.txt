@@ -3,8 +3,7 @@ loan
 mortgage
 rate
 mr
-5
-cent
+per cent
 mortgage rate
 mr takenaka
 per
