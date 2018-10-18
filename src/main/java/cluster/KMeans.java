@@ -19,9 +19,11 @@ public class KMeans {
 
     private double maxDistance;
 
-    private Map<Integer, List<Integer>> folderNumberToDocInts;
+    private int[] centroidLabels;
 
-    public KMeans(double[][] data, int k, int iterations, String similarity, Map<Integer, List<Integer>> folderNumberToDocInts) {
+    private Map<Integer, Integer> documentNumberToLabelNumber;
+
+    public KMeans(double[][] data, int k, int iterations, String similarity, Map<Integer, Integer> documentNumberToLabelNumber) {
         this.data = data;
         this.k = k;
         this.iterations = iterations;
@@ -30,7 +32,8 @@ public class KMeans {
         this.label = new int[numDocuments];
         this.similarity = similarity;
         this.maxDistance = Double.POSITIVE_INFINITY;
-        this.folderNumberToDocInts = folderNumberToDocInts;
+        this.centroidLabels = new int[k];
+        this.documentNumberToLabelNumber = documentNumberToLabelNumber;
     }
 
     public void kmeans() {
@@ -133,12 +136,16 @@ public class KMeans {
             } while (randomIntegers.contains(random));
 
             randomIntegers.add(random);
-            
+
 
             for (int j = 0; j < numWords; j++) {
                 centroids[i][j] = data[random][j];
             }
+
+            centroidLabels[i] = documentNumberToLabelNumber.get(random);
+            System.out.print("randomly generated: " + centroidLabels[i] + " ");
         }
+        System.out.println();
     }
 
     private void assignLabels() {
@@ -157,15 +164,10 @@ public class KMeans {
                     minIndex = j;
                 }
             }
-            label[i] = minIndex;
+            System.out.print(centroidLabels[minIndex] + " ");
+            label[i] = centroidLabels[minIndex];
         }
-//
-//        System.out.print("labels are: ");
-//        for (int i = 0; i < label.length; i++) {
-//            System.out.print(label[i] + " ");
-//        }
-//        System.out.println();
-
+        System.out.println();
     }
 
     private double distance(double[] x, double[] y) {

@@ -1,8 +1,6 @@
 import cluster.KMeans;
-import edu.stanford.nlp.io.EncodingPrintWriter;
 import matrix.MatrixUtils;
 import model.StatData;
-import org.opencv.core.Mat;
 import preprocess.PreProcess;
 import visual.Visualize;
 
@@ -31,38 +29,25 @@ public class Main {
         MatrixUtils.generateTopicsPerFolder(tfidf);
 
         Map<Integer, List<Integer>> folderNumberToInts = MatrixUtils.getFolderToListOfIs();
+        Map<Integer, Integer> documentNumberToLabelNumber = MatrixUtils.getDocumentNumberToLabelNumber();
 
-//        double[][] iris = readCSVToArray();
-//
-//        for(int i = 0; i < iris.length; i++) {
-//            for (int j = 0; j < iris[0].length; j++) {
-//                System.out.print((iris[i][j]) + " ");
-//            }
-//
-//            System.out.println();
-//        }
-//
         int k = 3;
 
         int highestMin = Integer.MIN_VALUE;
         int[] bestLabels = new int[tfidf.length];
 
-        for (int iter = 0; iter < 1; iter++) {
-            KMeans kMeans = new KMeans(tfidf, k, 10, "cosin", folderNumberToInts);
-            //KMeans kMeans = new KMeans(iris, k, 10, "cosin");
+        for (int iter = 0; iter < 20; iter++) {
+            KMeans kMeans = new KMeans(tfidf, k, 10, "cosin", documentNumberToLabelNumber);
             kMeans.kmeans();
 
             double[][] clusters = kMeans.getCentroids();
 
             int[] labels = kMeans.getLabel();
 
-            //System.out.println("Labels are: ");
-
             Map<Integer, Integer> numberPerLabel = new HashMap<>();
 
 
             for (int i = 0; i < labels.length; i++) {
-                System.out.print(labels[i] + " ");
                 numberPerLabel.merge(labels[i], 1, Integer::sum);
             }
 
@@ -91,7 +76,7 @@ public class Main {
 
         System.out.println();
 
-        Visualize.visualize(tfidf);
+        // Visualize.visualize(tfidf);
 
         int[][] confusionMatrix = MatrixUtils.generateConfusionMatrix(bestLabels);
 

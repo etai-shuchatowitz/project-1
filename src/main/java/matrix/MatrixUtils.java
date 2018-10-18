@@ -21,6 +21,12 @@ public class MatrixUtils {
 
     private static Map<Integer, List<Integer>> folderToListOfIs = new HashMap<>();
 
+    public static Map<Integer, Integer> getDocumentNumberToLabelNumber() {
+        return documentNumberToLabelNumber;
+    }
+
+    private static Map<Integer, Integer> documentNumberToLabelNumber = new HashMap<>();
+
     public static double[][] calculateDocumentMatrix(Map<String, String> textPerDoc, List<String> allPhrases) {
 
         double[][] documentMatrix = new double[textPerDoc.size()][allPhrases.size()]; // initialize matrix of docs by phrases
@@ -77,14 +83,17 @@ public class MatrixUtils {
             integers = folderToListOfIs.getOrDefault(0, new ArrayList<>());
             integers.add(i);
             folderToListOfIs.put(0, integers);
+            documentNumberToLabelNumber.put(i, 0);
         } else if (documentName.contains("C4")) {
             integers = folderToListOfIs.getOrDefault(1, new ArrayList<>());
             integers.add(i);
             folderToListOfIs.put(1, integers);
+            documentNumberToLabelNumber.put(i, 1);
         } else {
             integers = folderToListOfIs.getOrDefault(2, new ArrayList<>());
             integers.add(i);
             folderToListOfIs.put(2, integers);
+            documentNumberToLabelNumber.put(i, 2);
         }
     }
 
@@ -165,7 +174,12 @@ public class MatrixUtils {
         for (Map.Entry<Integer, List<Integer>> folder : folderToListOfIs.entrySet()) {
             int actualLabel = folder.getKey();
             for(int i = 0; i < folder.getValue().size(); i++) {
-                int predictedLabel = labels[i];
+
+                // System.out.println("value is: " + i);
+
+                int predictedLabel = labels[folder.getValue().get(i)];
+
+                // System.out.println("actual label: " + actualLabel + " predicted label: " + predictedLabel);
                 confusionMatrix[predictedLabel][actualLabel]++;
             }
         }
