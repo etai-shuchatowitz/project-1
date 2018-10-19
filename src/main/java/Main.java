@@ -28,16 +28,16 @@ public class Main {
 
         MatrixUtils.generateTopicsPerFolder(tfidf);
 
-        Map<Integer, List<Integer>> folderNumberToInts = MatrixUtils.getFolderToListOfIs();
         Map<Integer, Integer> documentNumberToLabelNumber = MatrixUtils.getDocumentNumberToLabelNumber();
+        Map<Integer, List<Integer>> folderToListOfIs = MatrixUtils.getFolderToListOfIs();
 
         int k = 3;
 
         int highestMin = Integer.MIN_VALUE;
         int[] bestLabels = new int[tfidf.length];
 
-        for (int iter = 0; iter < 20; iter++) {
-            KMeans kMeans = new KMeans(tfidf, k, 10, "cosin", documentNumberToLabelNumber);
+        for (int iter = 0; iter < 10; iter++) {
+            KMeans kMeans = new KMeans(tfidf, k, 10, "cosin", documentNumberToLabelNumber, folderToListOfIs);
             kMeans.kmeans();
 
             double[][] clusters = kMeans.getCentroids();
@@ -59,14 +59,10 @@ public class Main {
                 }
             }
 
-            System.out.println("LocalMin is: " + localMin);
-
             if(localMin > highestMin && numberPerLabel.size() == k) {
                 highestMin = localMin;
                 bestLabels = labels;
             }
-
-             System.out.println("#" + iter + ": " + numberPerLabel);
         }
 
         System.out.println();

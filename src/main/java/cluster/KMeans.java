@@ -22,8 +22,9 @@ public class KMeans {
     private int[] centroidLabels;
 
     private Map<Integer, Integer> documentNumberToLabelNumber;
+    private Map<Integer, List<Integer>> folderToListOfIs;
 
-    public KMeans(double[][] data, int k, int iterations, String similarity, Map<Integer, Integer> documentNumberToLabelNumber) {
+    public KMeans(double[][] data, int k, int iterations, String similarity, Map<Integer, Integer> documentNumberToLabelNumber, Map<Integer, List<Integer>> folderToListOfIs) {
         this.data = data;
         this.k = k;
         this.iterations = iterations;
@@ -34,12 +35,10 @@ public class KMeans {
         this.maxDistance = Double.POSITIVE_INFINITY;
         this.centroidLabels = new int[k];
         this.documentNumberToLabelNumber = documentNumberToLabelNumber;
+        this.folderToListOfIs = folderToListOfIs;
     }
 
     public void kmeans() {
-
-        System.out.println("documents: " + numDocuments);
-        System.out.println("words: " + numWords);
 
         // randomly fill centroids
         randomlyFillCentroids();
@@ -102,20 +101,18 @@ public class KMeans {
 
         // do the sums
         for (int i = 0; i < numDocuments; i++) {
-
-            int value = label[i]; // get the document's label (0, 1, 2)
-
+            int value = label[i]; // get the document's label (i.e. 0, 1, 2)
             for (int j = 0; j < numWords; j++) {
                 tempCentroids[value][j] += data[i][j];
             }
-
             tally[value]++;
         }
 
         // get the average
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < numWords; j++) {
-                tempCentroids[i][j] /= (double) tally[i];
+                tempCentroids[i][j] /= (double) tally[i]; // could have division by zero
+                System.out.println("tally[i] for centroid " + k + " is " + tally[i]);
             }
         }
 
@@ -126,48 +123,52 @@ public class KMeans {
     private void randomlyFillCentroids() {
         centroids = new double[k][numWords];
 
-        Set<Integer> randomIntegers = new HashSet<>();
-
         for (int i = 0; i < k; i++) {
 
-            int random;
-            do {
-                random = new Random().nextInt(numDocuments);
-            } while (randomIntegers.contains(random));
-
-            randomIntegers.add(random);
-
+            List<Integer> listOfDocumentNumbers = folderToListOfIs.get(i);
+            int random = listOfDocumentNumbers.get(new Random().nextInt(listOfDocumentNumbers.size()));
 
             for (int j = 0; j < numWords; j++) {
                 centroids[i][j] = data[random][j];
             }
 
             centroidLabels[i] = documentNumberToLabelNumber.get(random);
-            System.out.print("randomly generated: " + centroidLabels[i] + " ");
+            System.out.print("#:" + random + " - "  + centroidLabels[i] + " ");
         }
         System.out.println();
     }
 
     private void assignLabels() {
 
+        System.out.println("Assigning Labels:");
+
         for (int i = 0; i < numDocuments; i++) {
 
             double minDistance = Double.POSITIVE_INFINITY;
             int minIndex = 0;
 
+//            System.out.println();
+//            for (int l = 0; l < data[0].length; l++) {
+//                System.out.print(data[i][l] + " ");
+//            }
+//            System.out.println();
+
             for (int j = 0; j < k; j++) {
 
                 double distance = distance(data[i], centroids[j]);
+
+                System.out.println("Distance for j=" + j + " is " + distance);
 
                 if (distance < minDistance) {
                     minDistance = distance;
                     minIndex = j;
                 }
             }
-            System.out.print(centroidLabels[minIndex] + " ");
+            //System.out.println("Min Index is: " + minIndex);
+            //System.out.println("Document #:" + i + " has label " + centroidLabels[minIndex] + " ");
             label[i] = centroidLabels[minIndex];
         }
-        System.out.println();
+        //System.out.println();
     }
 
     private double distance(double[] x, double[] y) {
@@ -185,6 +186,9 @@ public class KMeans {
         double magB = 0;
 
         for (int i = 0; i < x.length; i++) {
+//
+//            System.out.println("x[i] is: " + x[i] + ", and y[i] is: " + y[i]);
+//            System.out.println();
             dot += x[i] * y[i];
             magA += x[i] * x[i];
             magB += y[i] * y[i];
@@ -194,6 +198,9 @@ public class KMeans {
         magB = Math.sqrt(magB);
 
         double cosin_similarity = dot / (magA * magB);
+//
+//        System.out.println("dot is: " + dot + ", magA is: " + magA + ", magB is: " + magB);
+//        System.out.println();
 
         return cosin_similarity;
     }
