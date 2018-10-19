@@ -7,6 +7,7 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import javax.swing.*;
 
+
 public class Visualize {
 
     public static void visualize(double[][] array) {
@@ -16,21 +17,6 @@ public class Visualize {
 
         double[][] pcaMatrix = factors.toDoubleMatrix();
 
-        System.out.println(pcaMatrix);
-
-        double[] x = new double[pcaMatrix[0].length];
-        double[] y = new double[pcaMatrix[0].length];
-
-        for (int i = 0; i < pcaMatrix.length; i++) {
-            for (int j = 0; j <pcaMatrix[0].length; j++) {
-                x[j] = pcaMatrix[i][j];
-                y[j] = pcaMatrix[i][j];
-
-                System.out.println(x[j] + " " + y[j]);
-            }
-        }
-
-        // create your PlotPanel (you can use it as a JPanel)
         Plot2DPanel plot = new Plot2DPanel();
 
         plot.addScatterPlot("my plot", pcaMatrix);
@@ -41,4 +27,5 @@ public class Visualize {
         frame.setVisible(true);
 
     }
+
 }

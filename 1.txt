@@ -2,5 +2,5 @@ agriculture
 disease
 mouth
 mouth disease
-hoof mouth
+hoof
 hoof mouth disease

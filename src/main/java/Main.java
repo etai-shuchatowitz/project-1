@@ -2,9 +2,14 @@ import cluster.KMeans;
 import matrix.MatrixUtils;
 import model.StatData;
 import preprocess.PreProcess;
+import visual.Visualize;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Main {
 
@@ -12,35 +17,64 @@ public class Main {
         String extension = "txt";
         String pathName = "src/main/resources/dataset_3/data";
         PreProcess preProcess = new PreProcess();
-
         Map<String, String> documents = preProcess.preprocessDocument(extension, pathName);
-        Set<String> phrases = preProcess.getAllPhrasesInDocuments(documents);
+        List<String> phrases = preProcess.getAllPhrasesInDocuments(documents);
 
-        int[][] documentMatrix = MatrixUtils.calculateDocumentMatrix(documents, phrases);
+        double[][] documentMatrix = MatrixUtils.calculateDocumentMatrix(documents, phrases);
         double[][] tfidf = MatrixUtils.convertToTfIdf(documentMatrix, documentMatrix.length, documentMatrix[0].length);
+
+        MatrixUtils.write2DMatrixToCSV(tfidf, "tfidf");
+        MatrixUtils.write2DMatrixToCSV(documentMatrix, "documentMatrix");
 
         MatrixUtils.generateTopicsPerFolder(tfidf);
 
+        Map<Integer, Integer> documentNumberToLabelNumber = MatrixUtils.getDocumentNumberToLabelNumber();
+        Map<Integer, List<Integer>> folderToListOfIs = MatrixUtils.getFolderToListOfIs();
+
         int k = 3;
 
-        KMeans kMeans = new KMeans(tfidf, k, 1000, "cosin");
-        kMeans.kmeans();
+        int highestMin = Integer.MIN_VALUE;
+        int[] bestLabels = new int[tfidf.length];
+        double[][] bestClusters = new double[k][tfidf[0].length];
 
-        double[][] clusters = kMeans.getCentroids();
+        for (int iter = 0; iter < 10; iter++) {
+            KMeans kMeans = new KMeans(tfidf, k, 10, "cosin", documentNumberToLabelNumber, folderToListOfIs);
+            kMeans.kmeans();
 
-        int[] labels = kMeans.getLabel();
+            int[] labels = kMeans.getLabel();
 
-        System.out.println("Labels are: ");
+            Map<Integer, Integer> numberPerLabel = new HashMap<>();
 
-        for (int i = 0; i < labels.length; i++) {
-            System.out.print(labels[i] + " ");
+
+            for (int i = 0; i < labels.length; i++) {
+                numberPerLabel.merge(labels[i], 1, Integer::sum);
+            }
+
+            int localMin = Integer.MAX_VALUE;
+
+            for(Map.Entry<Integer, Integer> number : numberPerLabel.entrySet()) {
+                if(number.getValue() < localMin) {
+                    localMin = number.getValue();
+                }
+            }
+
+            if(localMin > highestMin && numberPerLabel.size() == k) {
+                highestMin = localMin;
+                bestLabels = labels;
+            }
+        }
+
+        System.out.println();
+        for (int i = 0; i < bestLabels.length; i++) {
+            System.out.print(bestLabels[i] + " ");
         }
 
         System.out.println();
 
-        // Visualize.visualize(tfidf);
+        Visualize.visualize(tfidf);
+        Visualize.visualize(bestClusters);
 
-        int[][] confusionMatrix = MatrixUtils.generateConfusionMatrix(labels);
+        int[][] confusionMatrix = MatrixUtils.generateConfusionMatrix(bestLabels);
 
         System.out.println("Printing confusion matrix");
         System.out.println("------------------------------------");
@@ -57,5 +91,28 @@ public class Main {
             System.out.println("vals are: " + statData);
         }
 
+    }
+
+    public static double[][] readCSVToArray() throws IOException {
+        String fName = "iris.csv";
+        String thisLine;
+        int count=0;
+        FileInputStream fis = new FileInputStream(fName);
+        DataInputStream myInput = new DataInputStream(fis);
+        int i=0;
+        double[][] array = new double[150][4];
+
+        while ((thisLine = myInput.readLine()) != null) {
+            String strar[] = thisLine.split(",");
+            int j = 0;
+            for(String s : strar) {
+                double num = Double.parseDouble(s);
+                array[i][j] = num;
+                j++;
+            }
+            i++;
+        }
+
+        return array;
     }
 }
