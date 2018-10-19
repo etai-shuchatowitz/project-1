@@ -35,12 +35,11 @@ public class Main {
 
         int highestMin = Integer.MIN_VALUE;
         int[] bestLabels = new int[tfidf.length];
+        double[][] bestClusters = new double[k][tfidf[0].length];
 
         for (int iter = 0; iter < 10; iter++) {
             KMeans kMeans = new KMeans(tfidf, k, 10, "cosin", documentNumberToLabelNumber, folderToListOfIs);
             kMeans.kmeans();
-
-            double[][] clusters = kMeans.getCentroids();
 
             int[] labels = kMeans.getLabel();
 
@@ -72,7 +71,8 @@ public class Main {
 
         System.out.println();
 
-        // Visualize.visualize(tfidf);
+        Visualize.visualize(tfidf);
+        Visualize.visualize(bestClusters);
 
         int[][] confusionMatrix = MatrixUtils.generateConfusionMatrix(bestLabels);
 

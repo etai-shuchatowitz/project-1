@@ -112,7 +112,6 @@ public class KMeans {
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < numWords; j++) {
                 tempCentroids[i][j] /= (double) tally[i]; // could have division by zero
-                System.out.println("tally[i] for centroid " + k + " is " + tally[i]);
             }
         }
 
@@ -133,42 +132,27 @@ public class KMeans {
             }
 
             centroidLabels[i] = documentNumberToLabelNumber.get(random);
-            System.out.print("#:" + random + " - "  + centroidLabels[i] + " ");
         }
-        System.out.println();
     }
 
     private void assignLabels() {
-
-        System.out.println("Assigning Labels:");
 
         for (int i = 0; i < numDocuments; i++) {
 
             double minDistance = Double.POSITIVE_INFINITY;
             int minIndex = 0;
 
-//            System.out.println();
-//            for (int l = 0; l < data[0].length; l++) {
-//                System.out.print(data[i][l] + " ");
-//            }
-//            System.out.println();
-
             for (int j = 0; j < k; j++) {
 
                 double distance = distance(data[i], centroids[j]);
-
-                System.out.println("Distance for j=" + j + " is " + distance);
 
                 if (distance < minDistance) {
                     minDistance = distance;
                     minIndex = j;
                 }
             }
-            //System.out.println("Min Index is: " + minIndex);
-            //System.out.println("Document #:" + i + " has label " + centroidLabels[minIndex] + " ");
             label[i] = centroidLabels[minIndex];
         }
-        //System.out.println();
     }
 
     private double distance(double[] x, double[] y) {
@@ -186,9 +170,6 @@ public class KMeans {
         double magB = 0;
 
         for (int i = 0; i < x.length; i++) {
-//
-//            System.out.println("x[i] is: " + x[i] + ", and y[i] is: " + y[i]);
-//            System.out.println();
             dot += x[i] * y[i];
             magA += x[i] * x[i];
             magB += y[i] * y[i];
@@ -198,9 +179,6 @@ public class KMeans {
         magB = Math.sqrt(magB);
 
         double cosin_similarity = dot / (magA * magB);
-//
-//        System.out.println("dot is: " + dot + ", magA is: " + magA + ", magB is: " + magB);
-//        System.out.println();
 
         return cosin_similarity;
     }
